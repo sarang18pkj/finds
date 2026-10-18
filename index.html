@@ -4,253 +4,191 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d6b62">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
-<title>Under ₹100 Finds</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<title>Finds</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Mukta:wght@400;500;700&display=swap">
 <style>
-/* Layout: one phone-width column — controls on top, a stack of find cards, strategy in a second tab */
+/* Layout: one phone-width column — filters, one button, then 10 product cards (cover + price + link + steps) */
 :root{
   --bg:#f6f8f7; --surface:#ffffff; --fg:#14211f; --muted:#5b6b68; --line:#dbe3e1;
-  --accent:#0d6b62; --accent-fg:#ffffff; --marigold:#f2a516; --marigold-soft:#fdf0d4; --good:#2f7d32;
+  --accent:#0d6b62; --accent-fg:#ffffff; --marigold:#f2a516; --marigold-soft:#fdf0d4;
   --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
   --body:"Mukta", system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+@media (prefers-color-scheme: dark){:root{
   --bg:#0f1716; --surface:#172220; --fg:#e6efed; --muted:#9db0ac; --line:#2a3a37;
-  --accent:#3fb3a5; --accent-fg:#06201d; --marigold:#f5b740; --marigold-soft:#3a2f17; --good:#79c27c; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0f1716; --surface:#172220; --fg:#e6efed; --muted:#9db0ac; --line:#2a3a37;
-  --accent:#3fb3a5; --accent-fg:#06201d; --marigold:#f5b740; --marigold-soft:#3a2f17; --good:#79c27c; color-scheme:dark}
-body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body)}
-.wrap{max-width:640px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
-h1{font:800 2.1rem/1.05 var(--display);margin:0;text-wrap:balance}
+  --accent:#3fb3a5; --accent-fg:#06201d; --marigold:#f5b740; --marigold-soft:#3a2f17; color-scheme:dark}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 var(--body)}
+.wrap{max-width:640px;margin:0 auto;padding-block:16px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
+h1{font:800 1.9rem/1 var(--display);margin:0}
 h1 b{color:var(--marigold)}
-.sub{margin:4px 0 0;color:var(--muted)}
-.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
-.tabs button{flex:1;border:0;background:none;color:var(--fg);font:700 1rem var(--display);padding:8px;border-radius:999px;cursor:pointer}
-.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-fg)}
-.panel{display:grid;gap:14px}
 .controls{display:grid;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row{display:flex;flex-wrap:wrap;gap:8px}
 .label{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;width:100%}
 .chip{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:6px 12px;font:500 .95rem var(--body);cursor:pointer}
 .chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--accent-fg)}
-input[type=text]{width:100%;box-sizing:border-box;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:10px;padding:10px 12px;font:1rem var(--body)}
 .go{border:0;background:var(--marigold);color:#2a1d00;font:800 1.25rem var(--display);border-radius:14px;padding:14px;cursor:pointer;width:100%}
-.go:disabled{opacity:.6;cursor:wait}
-button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--marigold);outline-offset:2px}
+button:focus-visible,a:focus-visible{outline:3px solid var(--marigold);outline-offset:2px}
 .status{margin:0;color:var(--muted);font-size:.95rem;min-height:1.4em}
 .list{display:grid;gap:12px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:8px;min-width:0}
-.card.done{opacity:.6}
-.head{display:flex;gap:12px;align-items:flex-start}
-.score{flex:none;width:52px;height:52px;border-radius:12px;background:var(--marigold-soft);display:grid;place-items:center;text-align:center;line-height:1}
-.score b{font:800 1.35rem var(--display);color:var(--fg)}
-.score small{display:block;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.name{font:700 1.15rem/1.2 var(--display);margin:0}
-.meta{color:var(--muted);font-size:.88rem;font-variant-numeric:tabular-nums}
-.hook{margin:0;font-weight:700;font-size:1.05rem}
-.hook::before{content:"🎬 "}
-.why{margin:0;color:var(--muted)}
-details{border-top:1px dashed var(--line);padding-top:6px}
-summary{cursor:pointer;font-weight:700;color:var(--accent)}
-details ol{margin:6px 0;padding-left:20px}
-.cap{margin:4px 0;font-size:.95rem}
-.tags{color:var(--accent);font-size:.9rem;word-break:break-word}
-.links{display:flex;flex-wrap:wrap;gap:6px}
-.links a{text-decoration:none;color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-weight:500;font-size:.92rem}
-.links a.best{border-color:var(--accent);color:var(--accent);font-weight:700}
-.links a.best::after{content:" ★"}
-.foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.small{border:1px solid var(--line);background:none;color:var(--fg);border-radius:10px;padding:5px 10px;font:500 .9rem var(--body);cursor:pointer}
-.check{display:flex;gap:6px;align-items:center;font-size:.92rem;cursor:pointer}
-.note{background:var(--marigold-soft);border-radius:12px;padding:10px 12px;margin:0;font-size:.92rem}
-.plan h2{font:700 1.3rem var(--display);margin:6px 0 4px}
-.plan p,.plan li{max-width:62ch}
-.plan ul,.plan ol{margin:0;padding-left:20px;display:grid;gap:6px}
-.plan section{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
-@media (prefers-reduced-motion: no-preference){.card{animation:in .25s ease-out both}@keyframes in{from{transform:translateY(6px)}}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:grid;grid-template-columns:110px 1fr;gap:12px;min-width:0}
+.cover{display:grid;gap:6px;align-content:start}
+.cover canvas{width:110px;aspect-ratio:9/16;border-radius:10px;background:var(--line);display:block}
+.cover button{border:1px solid var(--line);background:none;color:var(--fg);border-radius:8px;padding:4px;font:500 .8rem var(--body);cursor:pointer}
+.info{display:grid;gap:6px;align-content:start;min-width:0}
+.rank{font:700 .78rem var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.name{font:700 1.1rem/1.2 var(--display);margin:0}
+.buy{display:flex;justify-content:space-between;align-items:center;gap:8px;text-decoration:none;background:var(--accent);color:var(--accent-fg);border-radius:12px;padding:8px 12px}
+.buy b{font:800 1.4rem/1 var(--display);font-variant-numeric:tabular-nums}
+.buy span{font-weight:700;font-size:.95rem}
+.others{display:flex;flex-wrap:wrap;gap:6px;font-size:.88rem}
+.others a{color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:3px 8px;text-decoration:none;font-variant-numeric:tabular-nums}
+.steps{grid-column:1/-1;margin:0;padding:10px 12px 10px 30px;background:var(--marigold-soft);border-radius:12px;font-size:.95rem}
+.steps::before{content:"Video kaise banayein";display:block;margin-left:-18px;font-weight:700}
+@media (max-width:360px){.card{grid-template-columns:90px 1fr}.cover canvas{width:90px}}
 </style>
-
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>Under <b>₹100</b> Finds</h1>
-    <p class="sub">Ek tap, 10 products jo video mein chal sakte hain — link, hook aur script ke saath.</p>
-  </header>
+  <h1><b>Top 10</b> Finds</h1>
 
-  <div class="tabs" role="tablist">
-    <button id="tab-finds" role="tab" aria-selected="true" aria-controls="finds">Finds</button>
-    <button id="tab-plan" role="tab" aria-selected="false" aria-controls="plan">Strategy</button>
-  </div>
-
-  <div id="finds" class="panel" role="tabpanel">
-    <div class="controls">
-      <div class="row" id="cats"><span class="label">Category</span>
-        <button class="chip" data-v="Kitchen & Home and Beauty & Accessories (mix both)" aria-pressed="true">Dono</button>
-        <button class="chip" data-v="Kitchen & Home" aria-pressed="false">Kitchen & Ghar</button>
-        <button class="chip" data-v="Beauty & Accessories" aria-pressed="false">Beauty</button>
-      </div>
-      <div class="row" id="budget"><span class="label">Budget (max)</span>
-        <button class="chip" data-v="49" aria-pressed="false">₹49</button>
-        <button class="chip" data-v="99" aria-pressed="true">₹99</button>
-        <button class="chip" data-v="149" aria-pressed="false">₹149</button>
-        <button class="chip" data-v="199" aria-pressed="false">₹199</button>
-      </div>
-      <input id="extra" type="text" placeholder="Kuch khaas? (optional) — jaise: Diwali safai, monsoon, gifting">
-      <button class="go" id="go">✨ 10 naye finds lao</button>
-      <p class="status" id="status"></p>
+  <div class="controls">
+    <div class="row" id="budget"><span class="label">Budget</span>
+      <button class="chip" data-v="1000">₹1000 se kam</button>
+      <button class="chip" data-v="500">₹500 se kam</button>
+      <button class="chip" data-v="200">₹200 se kam</button>
+      <button class="chip" data-v="100">₹100 se kam</button>
     </div>
-    <p class="note" id="sampleNote">Ye ek sample list hai. Upar wala button dabao, har baar nayi list aayegi. Price app mein check karke hi video banao.</p>
-    <div class="list" id="list"></div>
+    <div class="row" id="plats"><span class="label">Kahan se (ek ya zyada)</span>
+      <button class="chip" data-v="Amazon">Amazon</button>
+      <button class="chip" data-v="Meesho">Meesho</button>
+      <button class="chip" data-v="Flipkart">Flipkart</button>
+      <button class="chip" data-v="Blinkit">Blinkit</button>
+      <button class="chip" data-v="Instamart">Instamart</button>
+      <button class="chip" data-v="Zepto">Zepto</button>
+    </div>
+    <div class="row" id="cats"><span class="label">Category</span>
+      <button class="chip" data-v="">Sab</button>
+      <button class="chip" data-v="Kitchen">Kitchen</button>
+      <button class="chip" data-v="Home decor & organisers">Ghar</button>
+      <button class="chip" data-v="Beauty & skincare">Beauty</button>
+      <button class="chip" data-v="Fashion & jewellery">Fashion & Jewellery</button>
+      <button class="chip" data-v="Gadgets & phone accessories">Gadgets</button>
+      <button class="chip" data-v="Kids & toys">Bachche</button>
+      <button class="chip" data-v="Gifting & festive">Gifting & Tyohaar</button>
+    </div>
+    <button class="go" id="go">Top 10 dikhao</button>
+    <p class="status" id="status">Filter chuno aur button dabao.</p>
   </div>
 
-  <div id="plan" class="panel plan" role="tabpanel" hidden>
-    <section>
-      <h2>Kaunsa product chalega?</h2>
-      <ul>
-        <li><b>3 second mein "wow"</b> — kaam turant dikhe (before/after, satisfying moment).</li>
-        <li><b>Har ghar ki problem</b> — tel girna, baal uljhna, jagah kam padna.</li>
-        <li><b>Price shock</b> — "sirf ₹49!" screen par bada likho.</li>
-        <li><b>Haath se demo ho sake</b> — chhota, rangeen, camera par saaf dikhe.</li>
-        <li>Khane-peene ki cheezein, dawai aur skin par lagane wale sasta chemical — avoid karo.</li>
-      </ul>
-    </section>
-    <section>
-      <h2>15–30 second ki video ka dhaancha</h2>
-      <ol>
-        <li><b>0–2 sec:</b> Hook bolo + product haath mein + price screen par.</li>
-        <li><b>2–15 sec:</b> Asli use karke dikhao. Ek close-up zaroor.</li>
-        <li><b>Verdict:</b> "Paisa vasool" ya "Mat lena" — imaandaari se. Flop wale products bhi dikhao; isi se trust banta hai.</li>
-        <li><b>End:</b> "Kaunsi app se liya — comment mein likho LINK."</li>
-      </ol>
-    </section>
-    <section>
-      <h2>Series jo log follow karte hain</h2>
-      <ul>
-        <li>"₹99 mein kya milega?" — har din ek product.</li>
-        <li>"Meesho vs Amazon" — same product, kahan sasta aur behtar.</li>
-        <li>"Top ya Flop" — 3 products, ek verdict.</li>
-        <li>Tyohaar special — Diwali safai, gifting under ₹100.</li>
-      </ul>
-    </section>
-    <section>
-      <h2>Posting ka routine</h2>
-      <ul>
-        <li>Ek vertical video → Instagram Reels, YouTube Shorts aur Facebook teeno par.</li>
-        <li>Roz 1 video. Shaam 7–9 baje sabse accha.</li>
-        <li>Chehra zaroori nahi — sirf haath aur awaaz bhi chalti hai.</li>
-        <li>Pehle ghante har comment ka jawab do.</li>
-        <li>Agar product free mila ho ya paise mile hon, video mein "Ad" ya "Gifted" likhna zaroori hai (ASCI rule).</li>
-        <li>Followers badhne ke baad affiliate links (Amazon Associates, EarnKaro) se kamai shuru kar sakte hain.</li>
-      </ul>
-    </section>
-  </div>
+  <div class="list" id="list"></div>
 </div>
 
 <script>
-const STARTER=[
- {name:"Oil spray bottle (kitchen)",search:"oil spray bottle kitchen",price:"₹69–₹99",category:"Kitchen & Home",score:9,why:"Kam tel mein khana — health wale log turant save karte hain.",hook:"Ab tel ki bottle ulti karna band!",shots:["Purani tarah tawa par tel girta hua","Spray se patli layer, close-up","Dono ka farak side by side"],caption:"₹99 ki ye bottle aadha tel bachati hai 😳",tags:["meeshofinds","kitchenhacks","under100","healthycooking","reels"],best:"Meesho"},
- {name:"Silicone stretch lids (set of 6)",search:"silicone stretch lids",price:"₹79–₹99",category:"Kitchen & Home",score:8.8,why:"Stretch hote dekhna satisfying hai, aur foil ka kharcha bachta hai.",hook:"Foil aur plate dhakna ab bhool jao!",shots:["Katori par lid kheench kar lagao","Ulta karke dikhao, kuch nahi girta","Alag size ke bartan par lagao"],caption:"Kya ye sach mein leak-proof hai? Dekho 👀",tags:["kitchenfinds","amazonfinds","under100","homehacks","satisfying"],best:"Amazon"},
- {name:"3-in-1 peeler & julienne cutter",search:"3 in 1 vegetable peeler julienne",price:"₹49–₹89",category:"Kitchen & Home",score:8.4,why:"Gajar ke lambe lachhe bante dekhna — log rukte hain.",hook:"₹49 ka peeler jo 3 kaam karta hai!",shots:["Normal peel","Julienne blade se gajar ke lachhe","Salad plate ka final shot"],caption:"Salad ko restaurant jaisa banao sirf ₹49 mein",tags:["meeshohaul","kitchengadgets","under100","saladideas","finds"],best:"Meesho"},
- {name:"Transparent heavy wall hooks",search:"transparent adhesive wall hooks heavy duty",price:"₹59–₹99",category:"Kitchen & Home",score:8.1,why:"Weight test video hamesha chalta hai — log comment karte hain.",hook:"Bina drill ke kitna wazan uthayega?",shots:["Deewar par chipkao","Thaila latkao, phir aur wazan","Kal subah check karo — tika ya gira?"],caption:"5 kg test! Result dekh kar shock 😲",tags:["homehacks","flipkartfinds","under100","organization","testing"],best:"Flipkart"},
- {name:"Sink drain strainer (silicone)",search:"silicone sink strainer",price:"₹49–₹79",category:"Kitchen & Home",score:7.6,why:"Choke sink sabki problem hai — relatable.",hook:"Sink choke hona? Ye ₹49 ka hal.",shots:["Gande sink ka shot","Strainer lagao, kachra rukta hai","Ek jhatke mein saaf"],caption:"Plumber ko call karna band 😅",tags:["kitchenhacks","meeshofinds","cleaninghacks","under100","home"],best:"Meesho"},
- {name:"Matte claw clips (set)",search:"matte claw clip set",price:"₹59–₹99",category:"Beauty & Accessories",score:8.9,why:"10 second hairstyle — girls save aur share karti hain.",hook:"10 second mein 3 hairstyle, ek clip se!",shots:["Khule baal se pehla style","Doosra style fast forward","Saare colours ek frame mein"],caption:"Set mein kitne clips aaye? Price guess karo 👇",tags:["hairstyle","meeshofinds","under100","clawclip","beautyhacks"],best:"Meesho"},
- {name:"Heatless hair curler ribbon",search:"heatless hair curler",price:"₹79–₹99",category:"Beauty & Accessories",score:8.7,why:"Raat ko lagao, subah reveal — before/after format viral hai.",hook:"Bina heat ke curls? Raat bhar ka test!",shots:["Raat ko baal lapetna","Subah kholna — slow reveal","Final look camera ki taraf"],caption:"Kaam kiya ya nahi? Honest result",tags:["heatlesscurls","hairhacks","under100","meeshohaul","beforeandafter"],best:"Meesho"},
- {name:"Silicone face scrubber",search:"silicone face scrubber brush",price:"₹49–₹99",category:"Beauty & Accessories",score:7.9,why:"Foam aur close-up texture — satisfying content.",hook:"₹49 mein face cleansing brush!",shots:["Face wash ke saath foam banao","Close-up use","Saaf karke dikhao kitna hygienic hai"],caption:"Facial ke paise bachao? 🤔",tags:["skincare","amazonfinds","under100","beautyfinds","selfcare"],best:"Amazon"},
- {name:"Makeup sponge blender set",search:"makeup sponge blender set",price:"₹69–₹99",category:"Beauty & Accessories",score:7.4,why:"Paani mein phoolte dekhna — log 'wow' comment karte hain.",hook:"Sasta blender, mehnga result?",shots:["Sukha sponge","Paani mein dubao, size badhta hai","Foundation blend karke dikhao"],caption:"Branded vs ₹99 — farak dikhega?",tags:["makeup","meeshofinds","under100","beautyhacks","dupe"],best:"Meesho"},
- {name:"Eyebrow razor (pack)",search:"eyebrow razor pack",price:"₹49–₹79",category:"Beauty & Accessories",score:7.2,why:"Parlour ka kharcha bachane wali baat sabko pasand.",hook:"Parlour jaana band? ₹49 ka pack!",shots:["Pack kholo, kitne razor","Haath par safe use dikhao","Price screen par"],caption:"Ek pack, mahino ka kaam 💁‍♀️",tags:["beautyfinds","flipkartfinds","under100","grooming","savemoney"],best:"Flipkart"}
-];
-
+const API="https://finds-api.sarangfinds.workers.dev";
+const SEARCH={
+  Amazon:q=>`https://www.amazon.in/s?k=${q}`, Meesho:q=>`https://www.meesho.com/search?q=${q}`,
+  Flipkart:q=>`https://www.flipkart.com/search?q=${q}`, Blinkit:q=>`https://blinkit.com/s/?q=${q}`,
+  Instamart:q=>`https://www.swiggy.com/instamart/search?query=${q}`, Zepto:q=>`https://www.zeptonow.com/search?query=${q}`};
 const $=s=>document.querySelector(s);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const done=new Set(store.get("done",[]));
-let seen=store.get("seen",[]);
-let items=store.get("last",null), budget=store.get("budget","99");
+const money=n=>"₹"+Math.round(n).toLocaleString("en-IN");
 
-// Tabs
-for(const b of document.querySelectorAll(".tabs button")) b.onclick=()=>{
-  for(const t of document.querySelectorAll(".tabs button")){const on=t===b;t.setAttribute("aria-selected",on);$("#"+t.getAttribute("aria-controls")).hidden=!on}
-};
-// Single-choice chip rows
-function chips(id,onPick){for(const c of document.querySelectorAll(`#${id} .chip`)) c.onclick=()=>{
-  for(const o of document.querySelectorAll(`#${id} .chip`)) o.setAttribute("aria-pressed",o===c);onPick&&onPick(c.dataset.v)}}
-chips("cats");
-chips("budget",v=>{budget=v;store.set("budget",v);render()});
-for(const c of document.querySelectorAll("#budget .chip")) c.setAttribute("aria-pressed",c.dataset.v===budget);
-const pick=id=>document.querySelector(`#${id} .chip[aria-pressed="true"]`).dataset.v;
+// Filters: budget and category pick one, platforms pick many; all remembered on this phone
+const f=store.get("filters",{budget:"500",cat:"",plats:Object.keys(SEARCH)});
+function paint(){
+  for(const c of document.querySelectorAll("#budget .chip"))c.setAttribute("aria-pressed",c.dataset.v===f.budget);
+  for(const c of document.querySelectorAll("#cats .chip"))c.setAttribute("aria-pressed",c.dataset.v===f.cat);
+  for(const c of document.querySelectorAll("#plats .chip"))c.setAttribute("aria-pressed",f.plats.includes(c.dataset.v));
+  store.set("filters",f);
+}
+document.querySelector(".controls").addEventListener("click",e=>{
+  const c=e.target.closest(".chip");if(!c)return;
+  const row=c.parentElement.id,v=c.dataset.v;
+  if(row==="budget")f.budget=v;
+  else if(row==="cats")f.cat=v;
+  else f.plats=f.plats.includes(v)?(f.plats.length>1?f.plats.filter(p=>p!==v):f.plats):[...f.plats,v];
+  paint();
+});
+paint();
 
-function links(q,max){const e=encodeURIComponent(q);return[
-  ["Meesho",`https://www.meesho.com/search?q=${e}`],
-  ["Amazon",`https://www.amazon.in/s?k=${e}&high-price=${max}`],
-  ["Flipkart",`https://www.flipkart.com/search?q=${e}&p%5B%5D=facets.price_range.from%3DMin&p%5B%5D=facets.price_range.to%3D${max}`],
-  ["Blinkit",`https://blinkit.com/s/?q=${e}`]]}
-
-function scriptText(it){return `${it.name} (${it.price})\n\nHook: ${it.hook}\n\nShots:\n${(it.shots||[]).map((s,i)=>`${i+1}. ${s}`).join("\n")}\n\nCaption: ${it.caption}\n${(it.tags||[]).map(t=>"#"+String(t).replace(/^#/,"")).join(" ")}`}
+let seen=store.get("seen",[]),data=store.get("result",null);
 
 function render(){
-  const list=items||STARTER;
-  $("#sampleNote").hidden=!!items;
-  $("#list").innerHTML=list.map((it,i)=>`
-    <article class="card${done.has(it.name)?" done":""}">
-      <div class="head">
-        <div class="score"><div><b>${esc(Number(it.score)||"–")}</b><small>viral</small></div></div>
-        <div><p class="name">${esc(it.name)}</p><div class="meta">${esc(it.price)} · ${esc(it.category)}</div></div>
+  if(!data){$("#list").innerHTML="";return}
+  const quick=data.platforms.filter(p=>["Blinkit","Instamart","Zepto"].includes(p));
+  $("#list").innerHTML=data.items.map((it,i)=>{
+    const [best,...rest]=it.offers, q=encodeURIComponent(it.search);
+    const searchFor=ps=>ps.map(p=>`<a href="${SEARCH[p](q)}" target="_blank" rel="noopener">${p} pe dhoondho</a>`).join("");
+    const others=rest.map(o=>`<a href="${esc(o.url)}" target="_blank" rel="noopener">${o.platform} ${money(o.price)}</a>`).join("")
+      +searchFor(quick.filter(p=>!it.offers.some(o=>o.platform===p)));
+    return `<article class="card">
+      <div class="cover"><canvas id="cv${i}" width="720" height="1280" aria-label="Shorts cover for ${esc(it.name)}"></canvas>
+        <button data-dl="${i}">Cover save karo</button></div>
+      <div class="info">
+        <span class="rank">#${i+1}</span>
+        <p class="name">${esc(it.name)}</p>
+        ${best?`<a class="buy" href="${esc(best.url)}" target="_blank" rel="noopener"><b>${money(best.price)}</b><span>${best.platform} pe dekho →</span></a>`
+              :`<div class="others">${searchFor(data.platforms)}</div>`}
+        ${best&&others?`<div class="others">${others}</div>`:""}
       </div>
-      <p class="hook">${esc(it.hook)}</p>
-      <p class="why">${esc(it.why)}</p>
-      <details><summary>Video plan</summary>
-        <ol>${(it.shots||[]).map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
-        <p class="cap">${esc(it.caption)}</p>
-        <p class="tags">${(it.tags||[]).map(t=>"#"+esc(String(t).replace(/^#/,""))).join(" ")}</p>
-      </details>
-      <div class="links">${links(it.search||it.name,budget).map(([n,u])=>`<a href="${u}" target="_blank" rel="noopener"${n===it.best?' class="best"':""}>${n}</a>`).join("")}</div>
-      <div class="foot">
-        <button class="small" data-copy="${i}">Script copy karo</button>
-        <label class="check"><input type="checkbox" id="done-${i}" data-done="${i}"${done.has(it.name)?" checked":""}> Video ban gaya</label>
-      </div>
-    </article>`).join("");
+      <ol class="steps">${it.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+    </article>`}).join("");
+  document.fonts.ready.then(()=>data.items.forEach((it,i)=>drawCover($("#cv"+i),it)));
 }
-$("#list").addEventListener("click",async e=>{
-  const b=e.target.closest("[data-copy]");if(!b)return;
-  const it=(items||STARTER)[b.dataset.copy];
-  try{await navigator.clipboard.writeText(scriptText(it));b.textContent="Copy ho gaya ✓"}
-  catch{b.textContent="Copy nahi hua — video plan khol kar select karo"}
-});
-$("#list").addEventListener("change",e=>{
-  const i=e.target.dataset.done;if(i==null)return;
-  const n=(items||STARTER)[i].name;e.target.checked?done.add(n):done.delete(n);
-  store.set("done",[...done]);e.target.closest(".card").classList.toggle("done",e.target.checked);
+
+// 9:16 Shorts cover: product photo, big hook words, price badge
+function wrapLines(ctx,text,max){const out=[];let line="";for(const w of text.split(/\s+/)){const t=line?line+" "+w:w;if(ctx.measureText(t).width>max&&line){out.push(line);line=w}else line=t}if(line)out.push(line);return out}
+function drawCover(cv,it){
+  const ctx=cv.getContext("2d"),W=720,H=1280,price=it.offers[0]?.price;
+  const finish=img=>{
+    ctx.fillStyle="#ffffff";ctx.fillRect(0,0,W,H);
+    if(img){const s=Math.min(W/img.width,(H*0.62)/img.height),w=img.width*s,h=img.height*s;ctx.drawImage(img,(W-w)/2,60+(H*0.62-h)/2,w,h)}
+    ctx.fillStyle="#0d6b62";ctx.fillRect(0,H*0.66,W,H*0.34);
+    ctx.fillStyle="#ffffff";ctx.textAlign="center";ctx.textBaseline="middle";
+    let size=120,lines;
+    do{ctx.font=`800 ${size}px "Baloo 2", sans-serif`;lines=wrapLines(ctx,it.thumb.toUpperCase(),W-80);size-=6}while((lines.length>3||lines.some(l=>ctx.measureText(l).width>W-80))&&size>48);
+    const lh=size*1.05,y0=H*0.83-(lines.length-1)*lh/2;
+    lines.forEach((l,k)=>ctx.fillText(l,W/2,y0+k*lh));
+    if(price){ctx.fillStyle="#f2a516";ctx.beginPath();ctx.arc(W-130,H*0.66,110,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#2a1d00";ctx.font='800 72px "Baloo 2", sans-serif';ctx.fillText(money(price),W-130,H*0.66+4)}
+  };
+  if(!it.image)return finish(null);
+  const img=new Image();img.crossOrigin="anonymous";
+  img.onload=()=>finish(img);img.onerror=()=>finish(null);
+  img.src=API+"/img?u="+encodeURIComponent(it.image);
+}
+$("#list").addEventListener("click",e=>{
+  const b=e.target.closest("[data-dl]");if(!b)return;
+  const it=data.items[b.dataset.dl];
+  $("#cv"+b.dataset.dl).toBlob(blob=>{
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download=it.name.replace(/[^\w ]+/g,"").trim().replace(/\s+/g,"-")+"-cover.jpg";a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+  },"image/jpeg",0.9);
 });
 
-// Fresh finds come from the finds-api Worker (Gemini + Google Search); the key lives there
-const API="https://finds-api.sarangfinds.workers.dev";
 const go=$("#go"),status=$("#status");
-let ctl=null;
 const ERR={rate_limited:"Aaj ki limit poori ho gayi. Thodi der baad dobara dabao.",bad_reply:"List theek se nahi aayi. Ek baar aur dabao."};
-
+let ctl=null;
 go.onclick=async()=>{
   if(ctl){ctl.abort();return}
   ctl=new AbortController();
-  go.textContent="Ruko (cancel)";status.textContent="Internet par trend dhoondh rahi hoon… 20–40 second lagenge.";
+  go.textContent="Ruko (cancel)";status.textContent="Trend aur sabse sasta price dhoondh rahi hoon… 20–40 second.";
   try{
     const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},signal:ctl.signal,
-      body:JSON.stringify({cat:pick("cats"),budget,extra:$("#extra").value.trim(),seen:seen.slice(-60)})});
+      body:JSON.stringify({budget:+f.budget,cat:f.cat,platforms:f.plats,seen:seen.slice(-60)})});
     const res=await r.json().catch(()=>({error:"bad_reply"}));
-    const list=(res.items||[]).slice(0,10);
-    if(!list.length) throw {code:res.error||"bad_reply"};
-    items=list;store.set("last",items);
-    seen=[...seen,...list.map(x=>String(x.name))].slice(-120);store.set("seen",seen);
-    render();status.textContent=`${list.length} naye finds aa gaye ✓`;
+    if(!res.items||!res.items.length) throw {code:res.error||"bad_reply"};
+    data=res;store.set("result",data);
+    seen=[...seen,...res.items.map(x=>x.name)].slice(-120);store.set("seen",seen);
+    render();status.textContent="Ye rahe top 10. Price tap karke product kholo.";
   }catch(e){
     status.textContent=e.name==="AbortError"?"":(ERR[e.code]||"Internet check karo aur ek baar aur dabao.");
-  }finally{ctl=null;go.textContent="✨ 10 naye finds lao"}
+  }finally{ctl=null;go.textContent="Top 10 dikhao"}
 };
-
 render();
 </script>
 </body>
